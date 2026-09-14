@@ -1,0 +1,28 @@
+name: Daily Scan & Sync
+
+on:
+  schedule:
+    # 每天 08:00 UTC 运行一次（北京时间 16:00）
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 拉取 Issues 到公开数据 (占位)
+        run: |
+          echo "placeholder: 后续将使用 GitHub Issue API 拉取需求/Bug 并生成 progress-data.json"
+          echo "此步骤为占位，后续接入真实扫描逻辑"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 构建并提交进度数据（占位）
+        run: |
+          echo "placeholder: 将 progress-data.json 提交回仓库供 dev-progress.html 读取"

@@ -1,0 +1,18 @@
+{
+  "name": "free-will-sandbox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "超高自由度游戏 - 纯前端 Web 游戏 + 开发进度展示页",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0"
+  }
+}

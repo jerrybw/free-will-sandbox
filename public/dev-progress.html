@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="超高自由度游戏 - 开发进度展示页" />
+  <title>开发进度 - 超高自由度游戏</title>
+  <style>
+    :root {
+      --bg:#0f1420; --panel:#1a2130; --panel2:#222b3d; --border:#2f3b52;
+      --text:#e6e9f0; --muted:#8a93a8; --accent:#58a6ff; --good:#3fb950;
+      --warn:#d29922; --bad:#f85149;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(160deg,var(--bg),#0a0e16);color:var(--text);padding:24px;min-height:100vh}
+    .top{display:flex;align-items:center;justify-content:space-between;max-width:1080px;margin:0 auto 24px}
+    .top h1{font-size:20px}.top nav a{color:var(--muted);text-decoration:none;margin-left:16px;font-size:14px}
+    .top nav a:hover{color:var(--accent)}
+    .wrap{max-width:1080px;margin:0 auto}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+    .col{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;min-height:200px}
+    .col h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px}
+    .col h2 .n{float:right;color:var(--muted)}
+    .card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;font-size:13px}
+    .card .tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;margin-bottom:6px}
+    .p0{background:var(--bad);color:#fff}.p1{background:var(--warn);color:#160f00}.p2{background:var(--accent);color:#001625}.p3{background:var(--muted);color:#001}
+    .card .title{font-weight:600;margin-bottom:4px}.card .meta{color:var(--muted);font-size:11px}
+    .empty{color:var(--muted);font-style:italic;font-size:12px;text-align:center;padding:24px 0}
+    .badge{font-size:11px;color:var(--good)}
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h1>🗂️ 开发进度</h1>
+    <nav><a href="./">🎮 游戏</a><a href="./dev-progress.html">🗂️ 开发进度</a></nav>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+      <div class="col">
+        <h2>📋 需求队列 <span class="n" id="queueCount">0</span></h2>
+        <div id="queue"></div>
+      </div>
+      <div class="col">
+        <h2>🔧 开发中 <span class="n" id="devCount">0</span></h2>
+        <div id="dev"></div>
+      </div>
+      <div class="col">
+        <h2>🧪 测试中 <span class="n" id="testCount">0</span></h2>
+        <div id="test"></div>
+      </div>
+      <div class="col">
+        <h2>🚀 已发布 <span class="n" id="releasedCount">0</span></h2>
+        <div id="released"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 静态占位数据，后续由 GitHub Actions 从 Issues/PR 拉取后写入 JSON 替换
+    const DATA = {
+      queue: [
+        { id: 2, title: "放置系统 - 自动生成器进阶", pri: "P1", owner: "DEV", eta: "TBD" }
+      ],
+      dev: [
+        { id: 1, title: "项目初始化 - 搭建基础仓库和游戏骨架", pri: "P1", owner: "DEV", eta: "进行中" }
+      ],
+      test: [],
+      released: []
+    };
+
+    function card(item) {
+      return `<div class="card"><span class="tag ${item.pri.toLowerCase()}">${item.pri}</span>
+        <div class="title">#${item.id} ${item.title}</div>
+        <div class="meta">负责人：${item.owner} · ${item.eta}</div></div>`;
+    }
+    function render(id, list, emptyMsg) {
+      const box = document.getElementById(id);
+      const count = document.getElementById(id + "Count");
+      box.innerHTML = list.length ? list.map(card).join("") : `<div class="empty">${emptyMsg}</div>`;
+      count.textContent = list.length;
+    }
+    render("queue", DATA.queue, "暂无排期需求");
+    render("dev", DATA.dev, "当前无任务");
+    render("test", DATA.test, "暂无测试项");
+    render("released", DATA.released, "暂无发布版本");
+  </script>
+</body>
+</html>

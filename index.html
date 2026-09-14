@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="超高自由度游戏 - 纯前端点击/放置沙盒" />
+  <title>超高自由度游戏</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🎮 超高自由度游戏 <span class="version" id="ver"></span></div>
+    <nav>
+      <a href="/" class="active">🎮 游戏</a>
+      <a href="/dev-progress.html">🗂️ 开发进度</a>
+    </nav>
+  </header>
+
+  <main id="app" class="app">
+    <aside class="panel resources-panel">
+      <h2>资源</h2>
+      <div id="resources" class="resource-list"></div>
+      <div id="totalCookies" class="total">💎 总计：0</div>
+    </aside>
+
+    <section class="panel action-panel">
+      <h2>采集区</h2>
+      <div id="actions" class="actions-grid"></div>
+      <div id="upgrades" class="upgrades-grid"></div>
+    </section>
+
+    <aside class="panel log-panel">
+      <h2>事件日志</h2>
+      <div id="log" class="log-list"></div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

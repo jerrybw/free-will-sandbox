@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "id": "free_will_sandbox",
+    "name": "超高自由度游戏",
+    "version": "0.1.0",
+    "seed": 100,
+    "autosaveIntervalMs": 5000,
+    "tickMs": 100
+  },
+  "resources": [
+    { "id": "crystal", "name": "💎 水晶", "start": 0 },
+    { "id": "wood", "name": "🪵 木材", "start": 0 }
+  ],
+  "actions": [
+    {
+      "id": "mine",
+      "name": "⚒️ 挖矿",
+      "desc": "点击采集水晶",
+      "icon": "⛏️",
+      "gives": { "crystal": 1 }
+    },
+    {
+      "id": "chop",
+      "name": "🪓 伐木",
+      "desc": "点击采集木材",
+      "icon": "🪓",
+      "gives": { "wood": 1 }
+    }
+  ],
+  "upgrades": [
+    {
+      "id": "pickaxe",
+      "name": "⛏️ 合金镐头",
+      "desc": "每次挖矿多产出 1 水晶",
+      "cost": { "crystal": 10, "wood": 5 },
+      "effect": { "action": "mine", "add": 1 },
+      "maxLevel": 20
+    },
+    {
+      "id": "axe",
+      "name": "🪓 精钢斧",
+      "desc": "每次伐木多产出 1 木材",
+      "cost": { "crystal": 8, "wood": 12 },
+      "effect": { "action": "chop", "add": 1 },
+      "maxLevel": 20
+    },
+    {
+      "id": "generator",
+      "name": "🏭 自动挖掘机",
+      "desc": "每 tick 自动产出 1 水晶",
+      "cost": { "crystal": 50, "wood": 30 },
+      "effect": { "passive": "crystal", "addPerTick": 1 },
+      "maxLevel": 15
+    }
+  ]
+}
