@@ -1,0 +1,40 @@
+name: "📦 其他"
+description: "不属于 Bug / 功能 / 体验的其他事项（合作、问题咨询等），请提交其他"
+title: "[Other] "
+labels: ["issue/other"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢联系！请描述清楚事项内容，我们会尽快处理。
+  - type: input
+    id: email
+    attributes:
+      label: "提交人邮箱"
+      description: "必填。用于反馈跟进与身份识别，兼做黑名单识别键，请填写真实有效邮箱。"
+      placeholder: "you@example.com"
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: "类型"
+      description: "本模板为其他事项，类型固定，无需修改。"
+      options:
+        - "其他"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "问题描述"
+      description: "请描述你要反馈或咨询的内容。"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "预期效果"
+      description: "你希望得到什么结果或答复？"
+    validations:
+      required: true

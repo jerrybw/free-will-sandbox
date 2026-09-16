@@ -1,0 +1,49 @@
+name: Issues Snapshot
+
+# [S2] 每 15 分钟拉取仓库 open Issues 生成静态快照（public/data/issues-snapshot.json），
+#      提交回 main 供 dev-progress.html「需求动态分区」读取，保持纯前端架构。
+#      commit 信息携带 [skip ci] 防止 push 再次触发本 workflow造成循环。
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/generate-issues-snapshot.mjs"
+      - ".github/workflows/issues-snapshot.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: issues-snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout（内置 GITHUB_TOKEN，persist-credentials 默认开启供后续 push）
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate issues snapshot
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/generate-issues-snapshot.mjs
+
+      - name: Commit snapshot if changed（原生 git，无三方 action）
+        run: |
+          if git diff --quiet -- public/data/issues-snapshot.json; then
+            echo "快照无变化，跳过提交"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/data/issues-snapshot.json
+            git commit -m "chore: update issues snapshot [skip ci]"
+            git push origin main
+          fi

@@ -1,0 +1,4 @@
+# Issue 提交引导配置
+# 已禁用空白 Issue：所有需求请通过下方四类模板提交（Bug 报告 / 功能需求 / 体验反馈 / 其他），
+# 便于系统按 label 自动分类与流转（S2 自动读取机制）。
+blank_issues_enabled: false

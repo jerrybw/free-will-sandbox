@@ -1,0 +1,42 @@
+name: "✨ 功能需求"
+description: "想要的新玩法、新系统、新功能，请提交功能需求"
+title: "[Feature] "
+labels: ["issue/feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提案！请描述清楚你想要的功能，评审通过后会排期实现。
+  - type: input
+    id: email
+    attributes:
+      label: "提交人邮箱"
+      description: "必填。用于反馈跟进与身份识别，兼做黑名单识别键，请填写真实有效邮箱。"
+      placeholder: "you@example.com"
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: "类型"
+      description: "本模板为功能需求，类型固定，无需修改。"
+      options:
+        - "功能需求"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "问题描述"
+      description: "想要什么功能？希望解决什么问题？使用场景是什么？"
+      placeholder: |
+        希望增加……功能，目前……场景下缺少该能力。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "预期效果"
+      description: "实现后你期望的使用体验是什么样的？"
+    validations:
+      required: true

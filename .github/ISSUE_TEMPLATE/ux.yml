@@ -1,0 +1,42 @@
+name: "🎨 体验反馈"
+description: "对交互、UI、节奏、手感等体验层面的建议，请提交体验反馈"
+title: "[UX] "
+labels: ["issue/ux"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！体验类建议对我们同样重要，请尽量描述具体场景与感受。
+  - type: input
+    id: email
+    attributes:
+      label: "提交人邮箱"
+      description: "必填。用于反馈跟进与身份识别，兼做黑名单识别键，请填写真实有效邮箱。"
+      placeholder: "you@example.com"
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: "类型"
+      description: "本模板为体验反馈，类型固定，无需修改。"
+      options:
+        - "体验反馈"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "问题描述"
+      description: "哪里的体验不满意？在什么场景下发生的？"
+      placeholder: |
+        在「×× 场景」操作时，感觉……不够顺畅 / 不够直观。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "预期效果"
+      description: "你期望的更好体验是什么样的？"
+    validations:
+      required: true

@@ -1,0 +1,57 @@
+{
+  "_comment": "[MOCK] 降级兜底数据：issues-snapshot.json（GitHub Issues 静态快照）不可用时展示（S2 起需求队列主数据源为 GitHub Issues 快照）。字段结构按将来 GitHub Issues 设计（id/title/labels/priority/owner/state/created_at），queue/dev/test/released 为内部排期分区；S2 起本文件同时作为 LIVE 模式下「开发中/测试中/已发布」分区的内部排期数据源。与游戏配置 JSON 物理分开，便于一键切换。",
+  "source": "mock",
+  "updatedAt": "2026-09-14T19:20:00+08:00",
+  "queue": [
+    {
+      "id": 3,
+      "title": "放置系统 - 自动生成器进阶",
+      "labels": ["enhancement", "gameplay"],
+      "priority": "P1",
+      "owner": "TBD",
+      "state": "queued",
+      "created_at": "2026-09-12T10:30:00+08:00"
+    },
+    {
+      "id": 4,
+      "title": "成就系统 - 里程碑徽章与称号",
+      "labels": ["enhancement", "polish"],
+      "priority": "P2",
+      "owner": "TBD",
+      "state": "queued",
+      "created_at": "2026-09-13T15:05:00+08:00"
+    },
+    {
+      "id": 5,
+      "title": "音效与治愈系背景音乐",
+      "labels": ["polish", "audio"],
+      "priority": "P2",
+      "owner": "TBD",
+      "state": "queued",
+      "created_at": "2026-09-14T09:12:00+08:00"
+    }
+  ],
+  "dev": [
+    {
+      "id": 2,
+      "title": "源质工坊第二阶段（占位主题）",
+      "labels": ["feature", "core-loop", "config-driven"],
+      "priority": "P1",
+      "owner": "DEV",
+      "state": "in_progress",
+      "created_at": "2026-09-10T11:00:00+08:00"
+    }
+  ],
+  "test": [],
+  "released": [
+    {
+      "id": 1,
+      "title": "项目初始化 - 搭建基础仓库和游戏骨架",
+      "labels": ["infra", "bootstrap"],
+      "priority": "P1",
+      "owner": "DEV",
+      "state": "released",
+      "created_at": "2026-09-08T09:00:00+08:00"
+    }
+  ]
+}

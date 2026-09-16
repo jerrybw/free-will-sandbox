@@ -14,7 +14,8 @@
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(160deg,var(--bg),#0a0e16);color:var(--text);padding:24px;min-height:100vh}
     .top{display:flex;align-items:center;justify-content:space-between;max-width:1080px;margin:0 auto 24px}
-    .top h1{font-size:20px}.top nav a{color:var(--muted);text-decoration:none;margin-left:16px;font-size:14px}
+    .top h1{font-size:20px;display:flex;align-items:center;gap:10px}
+    .top nav a{color:var(--muted);text-decoration:none;margin-left:16px;font-size:14px}
     .top nav a:hover{color:var(--accent)}
     .wrap{max-width:1080px;margin:0 auto}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
@@ -25,14 +26,71 @@
     .card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;font-size:13px}
     .card .tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;margin-bottom:6px}
     .p0{background:var(--bad);color:#fff}.p1{background:var(--warn);color:#160f00}.p2{background:var(--accent);color:#001625}.p3{background:var(--muted);color:#001}
+    .lbl{display:inline-block;font-size:10px;padding:2px 6px;border-radius:6px;margin:0 4px 6px 4px;background:#2b3a55;color:var(--muted)}
     .card .title{font-weight:600;margin-bottom:4px}.card .meta{color:var(--muted);font-size:11px}
     .empty{color:var(--muted);font-style:italic;font-size:12px;text-align:center;padding:24px 0}
     .badge{font-size:11px;color:var(--good)}
+    .err-box{color:var(--bad);font-size:12px;padding:8px 2px}
+
+    /* [MOCK] Mock 徽标样式：页面顶部主徽标 + 分区小角标（琥珀色，hover 提示） */
+    .mock-badge,.mock-dot{display:inline-flex;align-items:center;gap:5px;background:var(--warn);color:#160f00;font-weight:700;border-radius:999px;cursor:help;white-space:nowrap}
+    .mock-badge{font-size:11px;letter-spacing:.5px;padding:3px 10px}
+    .mock-dot{font-size:10px;padding:1px 8px;font-weight:600;transform:translateY(-1px)}
+    .mock-badge::before,.mock-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:#160f00;opacity:.5}
+
+    /* 折叠分区：通知日志 / 黑名单记录 */
+    .panel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:16px}
+    @media(max-width:720px){.panel-grid{grid-template-columns:1fr}}
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .panel summary{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:13px;font-weight:600;cursor:pointer;user-select:none;list-style:none}
+    .panel summary::-webkit-details-marker{display:none}
+    .panel summary .n{margin-left:auto;color:var(--muted);font-weight:400;font-size:12px}
+    .panel-body{padding:0 16px 14px}
+    .item{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .item .ntime{margin-left:auto;color:var(--muted);font-size:11px}
+    .ntype{font-size:11px;padding:2px 6px;border-radius:6px;background:#2b3a55;color:var(--accent)}
+    .ncontent{flex:1 1 100%;color:var(--text);line-height:1.5}
+    .nstatus{font-size:11px}
+    .nstatus.unread{color:var(--warn);font-weight:700}
+    .nstatus.read{color:var(--muted)}
+    .bemail{font-weight:600}
+    .bip{color:var(--accent)}
+    .breason{flex:1 1 100%;color:var(--bad);font-size:11px;line-height:1.5}
+
+    /* 需求提交表单（Mock：localStorage 暂存） */
+    .req-form{margin-top:14px;background:var(--panel2);border:1px dashed var(--border);border-radius:10px;padding:10px;font-size:12px}
+    .req-form-title{font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .req-form input,.req-form select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 9px;font-size:12px;margin-bottom:8px;outline:none}
+    .req-form input:focus,.req-form select:focus{border-color:var(--accent)}
+    .req-form button{width:100%;background:var(--accent);border:none;border-radius:8px;color:#001625;font-weight:700;padding:8px 0;font-size:12px;cursor:pointer}
+    .req-form button:hover{filter:brightness(1.12)}
+    .req-hint{margin-top:8px;font-size:11px;display:none;line-height:1.5}
+    .req-hint.ok{display:block;color:var(--good)}
+    .req-hint.err{display:block;color:var(--bad)}
+
+    /* [S2] LIVE 快照徽标（绿色）：GitHub Issues 静态快照加载成功时显示 */
+    .live-badge,.live-dot{display:inline-flex;align-items:center;gap:5px;background:var(--good);color:#03130a;font-weight:700;border-radius:999px;cursor:help;white-space:nowrap}
+    .live-badge{font-size:11px;letter-spacing:.5px;padding:3px 10px}
+    .live-dot{font-size:10px;padding:1px 8px;font-weight:600;transform:translateY(-1px)}
+    .live-badge::before,.live-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:#03130a;opacity:.5}
+
+    /* [S2] Issue 卡片：类型小标签 / 状态徽标 / 摘要 / 快照生成时间 */
+    .itype{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;margin-right:4px;color:#fff;font-weight:600;vertical-align:1px}
+    .itype.bug{background:var(--bad)}
+    .itype.feature{background:var(--accent)}
+    .itype.ux{background:#a371f7}
+    .itype.other{background:var(--muted)}
+    .istate{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;font-weight:600;border:1px solid var(--good);color:var(--good)}
+    .issue-card .excerpt{margin-top:6px;color:var(--muted);font-size:11px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .live-meta{margin-top:8px;color:var(--muted);font-size:11px;text-align:center}
   </style>
 </head>
 <body>
   <div class="top">
-    <h1>🗂️ 开发进度</h1>
+    <h1>🗂️ 开发进度
+      <!-- [MOCK] 页面级 Mock 徽标：当前页面数据均来自 Mock，后续接入 GitHub Issues 后移除 -->
+      <span class="mock-badge" title="当前展示为 Mock 数据，后续接入 GitHub Issues">Mock 数据</span>
+    </h1>
     <nav><a href="./">🎮 游戏</a><a href="./dev-progress.html">🗂️ 开发进度</a></nav>
   </div>
 
@@ -41,50 +99,261 @@
       <div class="col">
         <h2>📋 需求队列 <span class="n" id="queueCount">0</span></h2>
         <div id="queue"></div>
+        <!-- [MOCK] 提交流转后续替换为 GitHub Issues 创建 API，本地仅 localStorage 暂存 -->
+        <form id="reqForm" class="req-form" autocomplete="off">
+          <div class="req-form-title">✍️ 提交需求 <span class="mock-dot" title="Mock 表单：仅本地暂存，后续接入 GitHub Issues">Mock</span></div>
+          <input id="reqTitle" type="text" placeholder="需求标题（最多 60 字）" required maxlength="60" />
+          <select id="reqType" required>
+            <option value="">选择类型…</option>
+            <option value="新功能">新功能</option>
+            <option value="优化建议">优化建议</option>
+            <option value="Bug 反馈">Bug 反馈</option>
+          </select>
+          <input id="reqEmail" type="email" placeholder="联系邮箱（仅本地暂存）" required />
+          <button type="submit">提交需求</button>
+          <div id="reqHint" class="req-hint" role="status"></div>
+        </form>
       </div>
       <div class="col">
-        <h2>🔧 开发中 <span class="n" id="devCount">0</span></h2>
+        <!-- [MOCK] 内部排期分区：快照无排期数据，暂由 Mock 兜底数据提供，后续版本接入 -->
+        <h2>🔧 开发中 <span class="mock-dot" title="内部排期数据暂为 Mock，后续版本接入">Mock</span><span class="n" id="devCount">0</span></h2>
         <div id="dev"></div>
       </div>
       <div class="col">
-        <h2>🧪 测试中 <span class="n" id="testCount">0</span></h2>
+        <h2>🧪 测试中 <span class="mock-dot" title="内部排期数据暂为 Mock，后续版本接入">Mock</span><span class="n" id="testCount">0</span></h2>
         <div id="test"></div>
       </div>
       <div class="col">
-        <h2>🚀 已发布 <span class="n" id="releasedCount">0</span></h2>
+        <h2>🚀 已发布 <span class="mock-dot" title="内部排期数据暂为 Mock，后续版本接入">Mock</span><span class="n" id="releasedCount">0</span></h2>
         <div id="released"></div>
       </div>
+    </div>
+
+    <div class="panel-grid">
+      <!-- [MOCK] 通知日志分区：后续替换为 GitHub Actions / Issue 评论通知的真实数据源 -->
+      <details class="panel" open>
+        <summary>🔔 通知日志
+          <span class="mock-dot" title="当前展示为 Mock 数据，后续接入 GitHub 通知">Mock</span>
+          <span class="n" id="notifCount">0</span>
+        </summary>
+        <div id="notifList" class="panel-body"></div>
+      </details>
+      <!-- [MOCK] 黑名单分区：纯前端无法真实拦截，后续需平台/边缘函数配合，此处仅 Mock 展示 -->
+      <details class="panel">
+        <summary>🚫 黑名单记录
+          <span class="mock-dot" title="当前展示为 Mock 数据，真实拦截需平台/边缘函数配合">Mock</span>
+          <span class="n" id="blackCount">0</span>
+        </summary>
+        <div id="blackList" class="panel-body"></div>
+      </details>
     </div>
   </div>
 
   <script>
-    // 静态占位数据，后续由 GitHub Actions 从 Issues/PR 拉取后写入 JSON 替换
-    const DATA = {
-      queue: [
-        { id: 2, title: "放置系统 - 自动生成器进阶", pri: "P1", owner: "DEV", eta: "TBD" }
-      ],
-      dev: [
-        { id: 1, title: "项目初始化 - 搭建基础仓库和游戏骨架", pri: "P1", owner: "DEV", eta: "进行中" }
-      ],
-      test: [],
-      released: []
-    };
-
-    function card(item) {
-      return `<div class="card"><span class="tag ${item.pri.toLowerCase()}">${item.pri}</span>
-        <div class="title">#${item.id} ${item.title}</div>
-        <div class="meta">负责人：${item.owner} · ${item.eta}</div></div>`;
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    }
+    function fmtTime(s) {
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return esc(s);
+      const p = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+    function boardCard(item) {
+      const labels = (item.labels || []).map(l => `<span class="lbl">${esc(l)}</span>`).join("");
+      return `<div class="card"><span class="tag ${esc(String(item.priority)).toLowerCase()}">${esc(item.priority)}</span>${labels}
+        <div class="title">#${esc(item.id)} ${esc(item.title)}</div>
+        <div class="meta">负责人：${esc(item.owner)} · ${fmtTime(item.created_at)}</div></div>`;
     }
     function render(id, list, emptyMsg) {
       const box = document.getElementById(id);
       const count = document.getElementById(id + "Count");
-      box.innerHTML = list.length ? list.map(card).join("") : `<div class="empty">${emptyMsg}</div>`;
+      box.innerHTML = list.length ? list.map(boardCard).join("") : `<div class="empty">${emptyMsg}</div>`;
       count.textContent = list.length;
     }
-    render("queue", DATA.queue, "暂无排期需求");
-    render("dev", DATA.dev, "当前无任务");
-    render("test", DATA.test, "暂无测试项");
-    render("released", DATA.released, "暂无发布版本");
+    function boardError() {
+      ["queue", "dev", "test", "released"].forEach(id => {
+        document.getElementById(id).innerHTML = `<div class="err-box">⚠️ 数据加载失败（快照与 Mock 数据源均不可用），请检查 ./data/issues-snapshot.json 与 ./data/mock/issues.json</div>`;
+      });
+    }
+    function devBoardError() {
+      ["dev", "test", "released"].forEach(id => {
+        document.getElementById(id).innerHTML = `<div class="err-box">⚠️ 内部排期数据加载失败，请检查 ./data/mock/issues.json</div>`;
+      });
+    }
+
+    /* ===== [S2] GitHub Issues 静态快照接入（需求动态分区主数据源） ===== */
+    const SNAPSHOT_URL = "./data/issues-snapshot.json";
+    const MOCK_ISSUES_URL = "./data/mock/issues.json";
+    const TYPE_TEXT = { bug: "Bug", feature: "功能", ux: "体验", other: "其他" };
+
+    function fmtRelative(s) {
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return esc(s);
+      const diff = Date.now() - d.getTime();
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return "刚刚";
+      if (m < 60) return m + " 分钟前";
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + " 小时前";
+      const day = Math.floor(h / 24);
+      if (day < 30) return day + " 天前";
+      return fmtTime(s);
+    }
+
+    function issueCard(it) {
+      const labels = (it.labels || []).map(l => `<span class="lbl">${esc(l)}</span>`).join("");
+      const excerpt = it.bodyExcerpt ? `<div class="excerpt">${esc(it.bodyExcerpt)}</div>` : "";
+      const type = `<span class="itype ${esc(it.type || "other")}">${esc(TYPE_TEXT[it.type] || it.type || "其他")}</span>`;
+      const state = it.state ? `<span class="istate ${esc(it.state)}">${esc(it.state)}</span>` : "";
+      return `<div class="card issue-card">${type}${state}${labels}
+        <div class="title">#${esc(it.number)} ${esc(it.title)}</div>
+        <div class="meta">@${esc(it.author)} · ${fmtRelative(it.createdAt)}</div>${excerpt}</div>`;
+    }
+
+    function renderQueueLive(snap) {
+      const issues = snap.issues || [];
+      document.getElementById("queue").innerHTML =
+        (issues.length ? issues.map(issueCard).join("") : `<div class="empty">暂无进行中的需求</div>`)
+        + `<div class="live-meta">快照生成于 ${esc(fmtTime(snap.generatedAt))} · 来源 GitHub Issues（约每 15 分钟更新）</div>`;
+      document.getElementById("queueCount").textContent = issues.length;
+    }
+
+    function setQueueBadge(mode, snap) {
+      const el = document.getElementById("queueBadge");
+      if (!el) return;
+      if (mode === "live") {
+        el.innerHTML = `<span class="live-dot" title="数据来自 GitHub Issues 静态快照（生成于 ${esc(fmtTime(snap.generatedAt))}）">LIVE 快照</span>`;
+      } else {
+        // [MOCK] 降级兜底数据：快照不可用时展示，沿用现有 MOCK 角标样式
+        el.innerHTML = `<span class="mock-dot" title="GitHub Issues 快照不可用，当前展示为离线兜底 Mock 数据">离线快照 · MOCK 兜底</span>`;
+      }
+    }
+
+    function setPageBadge(mode, snap) {
+      const el = document.getElementById("pageDataBadge");
+      if (!el) return;
+      if (mode === "live") {
+        el.className = "live-badge";
+        el.title = "需求数据来自 GitHub Issues 快照；表单/通知/黑名单仍为 Mock";
+        el.textContent = "LIVE 快照";
+      } else {
+        // [MOCK] 降级兜底数据：沿用现有 Mock 徽标
+        el.className = "mock-badge";
+        el.title = "需求快照不可用，已降级为 Mock 兜底数据";
+        el.textContent = "Mock 数据";
+      }
+    }
+
+    async function loadBoard() {
+      // 主链路：先读 GitHub Issues 静态快照（由 Actions 每 15 分钟生成，脚本 scripts/generate-issues-snapshot.mjs）
+      let snap = null;
+      try {
+        const r = await fetch(SNAPSHOT_URL);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const data = await r.json();
+        if (!data || !Array.isArray(data.issues)) throw new Error("快照 schema 不合法");
+        snap = data;
+      } catch (e) {
+        snap = null;
+      }
+      if (snap) {
+        // LIVE 渲染：需求队列展示真实 open Issues
+        renderQueueLive(snap);
+        setQueueBadge("live", snap);
+        setPageBadge("live", snap);
+        // 开发中/测试中/已发布为内部排期数据，快照中无此信息，继续读 Mock 兜底数据对应分区
+        try {
+          const r2 = await fetch(MOCK_ISSUES_URL);
+          if (!r2.ok) throw new Error("HTTP " + r2.status);
+          const mock = await r2.json();
+          render("dev", mock.dev || [], "当前无任务");
+          render("test", mock.test || [], "暂无测试项");
+          render("released", mock.released || [], "暂无发布版本");
+        } catch (e) {
+          devBoardError();
+        }
+      } else {
+        // 降级兜底：快照不可用时整体回退本地 Mock 四分区（沿用原渲染逻辑与 MOCK 角标）
+        try {
+          const r = await fetch(MOCK_ISSUES_URL);
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          const data = await r.json();
+          render("queue", data.queue || [], "暂无排期需求");
+          render("dev", data.dev || [], "当前无任务");
+          render("test", data.test || [], "暂无测试项");
+          render("released", data.released || [], "暂无发布版本");
+          setQueueBadge("mock", null);
+          setPageBadge("mock", null);
+        } catch (e) {
+          boardError();
+        }
+      }
+    }
+    loadBoard();
+
+    // [MOCK] 通知日志：后续替换为 GitHub Actions / Issue 评论通知的真实数据源
+    fetch("./data/mock/notifications.json")
+      .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(data => {
+        const items = data.items || [];
+        document.getElementById("notifList").innerHTML = items.length
+          ? items.map(n => `<div class="item"><span class="ntype">${esc(n.type)}</span>
+              <span class="nstatus ${n.status === "unread" ? "unread" : "read"}">${n.status === "unread" ? "未读" : "已读"}</span>
+              <span class="ntime">${fmtTime(n.time)}</span>
+              <span class="ncontent">${esc(n.content)}</span></div>`).join("")
+          : `<div class="empty">暂无通知</div>`;
+        document.getElementById("notifCount").textContent = items.length;
+      })
+      .catch(() => {
+        document.getElementById("notifList").innerHTML = `<div class="err-box">⚠️ 通知数据加载失败，请检查 ./data/mock/notifications.json</div>`;
+      });
+
+    // [MOCK] 黑名单记录：纯前端无法真实拦截，后续由平台/边缘函数提供真实数据，此处仅 Mock 展示
+    fetch("./data/mock/blacklist.json")
+      .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(data => {
+        const items = data.items || [];
+        document.getElementById("blackList").innerHTML = items.length
+          ? items.map(b => `<div class="item"><span class="bemail">📧 ${esc(b.email)}</span>
+              <span class="bip">🌐 IP ${esc(b.ip)}</span>
+              <span class="ntime">${fmtTime(b.time)}</span>
+              <span class="breason">原因：${esc(b.reason)}</span></div>`).join("")
+          : `<div class="empty">暂无记录</div>`;
+        document.getElementById("blackCount").textContent = items.length;
+      })
+      .catch(() => {
+        document.getElementById("blackList").innerHTML = `<div class="err-box">⚠️ 黑名单数据加载失败，请检查 ./data/mock/blacklist.json</div>`;
+      });
+
+    // [MOCK] 提交流转后续替换为 GitHub Issues 创建 API，本地仅 localStorage 暂存
+    // 字段结构对齐将来 GitHub Issue：title / body / labels / email / created_at
+    document.getElementById("reqForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const hint = document.getElementById("reqHint");
+      const title = document.getElementById("reqTitle").value.trim();
+      const type = document.getElementById("reqType").value;
+      const email = document.getElementById("reqEmail").value.trim();
+      if (!title || !type || !email) return;
+      const submission = {
+        title,
+        body: `类型：${type}\n来源：开发进度页 Mock 表单\n状态：待评审`,
+        labels: ["需求收集", type],
+        email,
+        created_at: new Date().toISOString()
+      };
+      try {
+        const list = JSON.parse(localStorage.getItem("fws_mock_submissions") || "[]");
+        list.push(submission);
+        localStorage.setItem("fws_mock_submissions", JSON.stringify(list));
+        hint.className = "req-hint ok";
+        hint.textContent = `✅ 提交成功（本地暂存第 ${list.length} 条）。当前为 Mock 流转，后续接入 GitHub Issues 后会正式创建 Issue。`;
+        e.target.reset();
+      } catch (err) {
+        hint.className = "req-hint err";
+        hint.textContent = "⚠️ 本地暂存失败（localStorage 不可用），请稍后重试。";
+      }
+    });
   </script>
 </body>
 </html>

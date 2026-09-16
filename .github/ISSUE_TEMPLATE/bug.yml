@@ -1,0 +1,44 @@
+name: "🐞 Bug 报告"
+description: "游戏运行异常、功能错误、显示问题等，请提交 Bug 报告"
+title: "[Bug] "
+labels: ["issue/bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请尽量完整填写以下内容，信息越具体越有助于快速定位与修复。
+  - type: input
+    id: email
+    attributes:
+      label: "提交人邮箱"
+      description: "必填。用于反馈跟进与身份识别，兼做黑名单识别键，请填写真实有效邮箱。"
+      placeholder: "you@example.com"
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: "类型"
+      description: "本模板为 Bug 报告，类型固定，无需修改。"
+      options:
+        - "Bug 报告"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "问题描述"
+      description: "发生了什么？请包含复现步骤与操作环境（设备 / 浏览器 / 系统版本）。"
+      placeholder: |
+        1. 进入「×× 页面」
+        2. 点击「×× 按钮」
+        3. 出现了……
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "预期效果"
+      description: "你期望的正确表现是什么？"
+    validations:
+      required: true
