@@ -1,9 +1,9 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main, master]
   workflow_dispatch:
+  # 部署冻结令（2026-09-15）：push 不再自动触发 Pages 部署，仅保留手动触发。
+  # 解冻时恢复 push 触发：push: branches: [main, master]
 
 # 授予 GITHUB_TOKEN Pages 部署权限
 permissions:
