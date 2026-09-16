@@ -1,56 +1,56 @@
 {
   "meta": {
-    "id": "free_will_sandbox",
-    "name": "超高自由度游戏",
-    "version": "0.1.0",
+    "id": "essence_workshop",
+    "version": "0.2.0",
     "seed": 100,
     "autosaveIntervalMs": 5000,
-    "tickMs": 100
+    "tickMs": 100,
+    "saveKey": "fws_save_v2",
+    "legacySaveKey": "fws_save_v1",
+    "costGrowth": 1.6,
+    "logLimit": 50
   },
   "resources": [
-    { "id": "crystal", "name": "💎 水晶", "start": 0 },
-    { "id": "wood", "name": "🪵 木材", "start": 0 }
+    { "id": "essence", "start": 0, "capBase": 1000 },
+    { "id": "core", "start": 0, "capBase": 500 },
+    { "id": "composite", "start": 0, "capBase": 200 }
   ],
   "actions": [
+    { "id": "gather", "kind": "click", "gives": { "essence": 2 } },
+    { "id": "extract", "kind": "click", "gives": { "core": 1 } },
     {
-      "id": "mine",
-      "name": "⚒️ 挖矿",
-      "desc": "点击采集水晶",
-      "icon": "⛏️",
-      "gives": { "crystal": 1 }
-    },
-    {
-      "id": "chop",
-      "name": "🪓 伐木",
-      "desc": "点击采集木材",
-      "icon": "🪓",
-      "gives": { "wood": 1 }
+      "id": "synthesize",
+      "kind": "convert",
+      "gives": { "composite": 1 },
+      "consumes": { "essence": 10, "core": 2 }
     }
   ],
   "upgrades": [
-    {
-      "id": "pickaxe",
-      "name": "⛏️ 合金镐头",
-      "desc": "每次挖矿多产出 1 水晶",
-      "cost": { "crystal": 10, "wood": 5 },
-      "effect": { "action": "mine", "add": 1 },
-      "maxLevel": 20
-    },
-    {
-      "id": "axe",
-      "name": "🪓 精钢斧",
-      "desc": "每次伐木多产出 1 木材",
-      "cost": { "crystal": 8, "wood": 12 },
-      "effect": { "action": "chop", "add": 1 },
-      "maxLevel": 20
-    },
-    {
-      "id": "generator",
-      "name": "🏭 自动挖掘机",
-      "desc": "每 tick 自动产出 1 水晶",
-      "cost": { "crystal": 50, "wood": 30 },
-      "effect": { "passive": "crystal", "addPerTick": 1 },
-      "maxLevel": 15
-    }
+    { "id": "charged_pick", "cost": { "essence": 20 }, "effect": { "type": "action_add", "action": "gather", "add": 1 }, "maxLevel": 20 },
+    { "id": "core_cutter", "cost": { "essence": 40 }, "effect": { "type": "action_add", "action": "extract", "add": 1 }, "maxLevel": 20 },
+    { "id": "convergence_ring", "cost": { "essence": 80, "core": 25 }, "effect": { "type": "passive", "resource": "essence", "addPerTick": 1 }, "maxLevel": 15 },
+    { "id": "resonance_tower", "cost": { "core": 80 }, "effect": { "type": "passive", "resource": "core", "addPerTick": 0.5 }, "maxLevel": 15 },
+    { "id": "essence_prism", "cost": { "essence": 120 }, "effect": { "type": "action_add", "action": "gather", "add": 2 }, "maxLevel": 10 },
+    { "id": "synth_optimizer", "cost": { "composite": 5 }, "effect": { "type": "convert_discount", "action": "synthesize", "discountPerLevel": 0.1, "maxDiscount": 0.5 }, "maxLevel": 5 },
+    { "id": "auto_synthesizer", "cost": { "composite": 12, "core": 60 }, "effect": { "type": "auto_convert", "action": "synthesize" }, "maxLevel": 5 },
+    { "id": "storage_expansion", "cost": { "composite": 10 }, "effect": { "type": "cap_add", "add": 500 }, "maxLevel": 10 },
+    { "id": "composite_catalyst", "cost": { "composite": 20, "essence": 600 }, "effect": { "type": "convert_output", "action": "synthesize", "add": 1 }, "maxLevel": 5 },
+    { "id": "tidal_engine", "cost": { "composite": 30 }, "effect": { "type": "passive", "resource": "essence", "addPerTick": 2 }, "maxLevel": 10 }
+  ],
+  "events": [
+    { "id": "meteor_shower", "chancePerTick": 0.0012, "durationMs": 10000, "effect": { "type": "multiplier_click", "multiplier": 2 } },
+    { "id": "energy_tide", "chancePerTick": 0.001, "durationMs": 0, "effect": { "type": "grant_resource", "resource": "essence", "amount": 20 } },
+    { "id": "resonance", "chancePerTick": 0.0008, "durationMs": 0, "effect": { "type": "free_cost_n", "resource": "core", "freeCount": 3 } }
+  ],
+  "milestones": [
+    { "id": "m_essence_100", "type": "total_earned", "resource": "essence", "threshold": 100, "reward": { "essence": 30 } },
+    { "id": "m_first_synth", "type": "synth_count", "threshold": 1, "reward": { "essence": 50 } },
+    { "id": "m_click_200", "type": "total_clicks", "threshold": 200, "reward": { "core": 10 } },
+    { "id": "m_essence_500", "type": "total_earned", "resource": "essence", "threshold": 500, "reward": { "core": 20 } },
+    { "id": "m_upgrades_5", "type": "upgrade_levels", "threshold": 5, "reward": { "essence": 150 } },
+    { "id": "m_core_100", "type": "total_earned", "resource": "core", "threshold": 100, "reward": { "essence": 200 } },
+    { "id": "m_synth_25", "type": "synth_count", "threshold": 25, "reward": { "core": 30 } },
+    { "id": "m_essence_2000", "type": "total_earned", "resource": "essence", "threshold": 2000, "reward": { "composite": 10 } },
+    { "id": "m_upgrades_15", "type": "upgrade_levels", "threshold": 15, "reward": { "composite": 5 } }
   ]
 }

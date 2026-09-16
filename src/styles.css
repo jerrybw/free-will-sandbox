@@ -28,6 +28,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   padding: 14px 24px;
   background: rgba(26,33,48,.7);
   border-bottom: 1px solid var(--border);
@@ -36,8 +37,37 @@ body {
   backdrop-filter: blur(6px);
   z-index: 10;
 }
-.brand { font-size: 18px; font-weight: 700; }
+.brand { font-size: 18px; font-weight: 700; white-space: nowrap; }
 .brand .version { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+
+/* 顶栏事件徽标 */
+.event-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+.event-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(88,166,255,.12);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  white-space: nowrap;
+  animation: badge-pulse 1.6s ease-in-out infinite;
+}
+.event-badge.free {
+  background: rgba(63,185,80,.12);
+  border-color: var(--good);
+  color: var(--good);
+}
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .65; }
+}
 .topbar nav a {
   color: var(--muted);
   text-decoration: none;
@@ -113,9 +143,13 @@ body {
 }
 .action-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
 .action-btn:active { transform: scale(.96); }
+.action-btn.insufficient { opacity: .45; cursor: not-allowed; }
+.action-btn.insufficient:hover { border-color: var(--border); transform: none; }
 .act-icon { font-size: 30px; }
 .act-name { font-size: 14px; font-weight: 600; }
 .act-gain { font-size: 12px; color: var(--good); }
+.act-cost { font-size: 12px; color: var(--warn); text-align: center; }
+.act-free { font-size: 11px; color: var(--good); }
 
 /* 升级 */
 .upgrades-grid {
@@ -134,11 +168,49 @@ body {
   opacity: .75;
 }
 .upgrade-card.affordable { opacity: 1; border-color: var(--good); }
+.upgrade-card.maxed { opacity: .5; cursor: default; }
 .upgrade-card:hover { border-color: var(--accent); }
 .up-name { font-size: 14px; font-weight: 600; }
 .up-lvl { font-size: 12px; color: var(--accent); float: right; }
 .up-desc { font-size: 12px; color: var(--muted); margin: 6px 0; }
 .up-cost { font-size: 12px; color: var(--warn); }
+
+/* 事件动态 */
+.event-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.event-item {
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(88,166,255,.08);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.event-item.free { background: rgba(63,185,80,.08); border-color: var(--good); color: var(--good); }
+.empty-hint { font-size: 12px; color: var(--muted); padding: 8px 0; }
+
+/* 里程碑 */
+.milestone-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.milestone-next {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.ms-goal-title { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+.ms-name { font-size: 13px; font-weight: 600; }
+.ms-desc { font-size: 11px; color: var(--muted); margin: 4px 0; }
+.ms-progress { font-size: 11px; color: var(--warn); margin-bottom: 6px; }
+.ms-bar-wrap { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.ms-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--good)); border-radius: 999px; transition: width .2s; }
+.milestone-done-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.milestone-done {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(63,185,80,.1);
+  border: 1px solid var(--good);
+  color: var(--good);
+}
 
 /* 日志 */
 .log-list { max-height: 520px; overflow-y: auto; }

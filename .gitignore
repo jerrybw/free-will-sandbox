@@ -24,3 +24,9 @@ npm-debug.log*
 # 运行时
 coverage/
 *.tsbuildinfo
+# 沙箱运行时与受保护目录
+.runtime/
+.skills/
+.canvas/
+.feishu_cli/
+auth_qrcode_*.png

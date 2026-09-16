@@ -3,33 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="超高自由度游戏 - 纯前端点击/放置沙盒" />
-  <title>超高自由度游戏</title>
+  <meta name="description" content="" />
+  <title>Game</title>
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">🎮 超高自由度游戏 <span class="version" id="ver"></span></div>
+    <div class="brand"><span data-text-key="page.brand">Game</span> <span class="version" id="ver"></span></div>
+    <div id="event-badges" class="event-badges"></div>
     <nav>
-      <a href="/" class="active">🎮 游戏</a>
-      <a href="/dev-progress.html">🗂️ 开发进度</a>
+      <a href="/" class="active" data-text-key="nav.game">Game</a>
+      <a href="/dev-progress.html" data-text-key="nav.dev">Dev</a>
     </nav>
   </header>
 
   <main id="app" class="app">
     <aside class="panel resources-panel">
-      <h2>资源</h2>
+      <h2 data-text-key="panels.resources">Resources</h2>
       <div id="resources" class="resource-list"></div>
-      <div id="totalCookies" class="total">💎 总计：0</div>
+      <div id="totalHolding" class="total"></div>
     </aside>
 
     <section class="panel action-panel">
-      <h2>采集区</h2>
+      <h2 data-text-key="panels.collect">Collect</h2>
       <div id="actions" class="actions-grid"></div>
+      <h2 data-text-key="panels.upgrades">Upgrades</h2>
       <div id="upgrades" class="upgrades-grid"></div>
     </section>
 
-    <aside class="panel log-panel">
-      <h2>事件日志</h2>
+    <aside class="panel right-panel">
+      <h2 data-text-key="panels.events">Events</h2>
+      <div id="events" class="event-list"></div>
+      <h2 data-text-key="panels.milestones">Milestones</h2>
+      <div id="milestones" class="milestone-list"></div>
+      <h2 data-text-key="panels.log">Log</h2>
       <div id="log" class="log-list"></div>
     </aside>
   </main>

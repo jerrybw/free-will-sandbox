@@ -1,14 +1,30 @@
 import type { GameState } from '../types';
-import { CONFIG } from './config';
+import { CONFIG, TEXTS, fmt, fmtAmounts, upgradeText } from './config';
 import {
-  computeActionGives,
+  addResource,
+  autoConvertPerTick,
   computePassivePerTick,
   createInitialState,
+  getUpgradeLevel,
+  isAffordable,
   loadGame,
+  performClick,
   saveGame,
-  upgradeApi
+  tryConvert,
+  upgradeCost
 } from './store';
-import { renderResources, renderActions, renderUpgrades, appendLog } from '../ui/render';
+import { maybeTriggerEvents, tickEvents } from './events';
+import { checkMilestones } from './milestones';
+import {
+  renderResources,
+  renderActions,
+  renderUpgrades,
+  renderEventBadges,
+  renderEvents,
+  renderMilestones,
+  appendLog,
+  showToast
+} from '../ui/render';
 
 export class GameManager {
   state: GameState;
@@ -17,83 +33,113 @@ export class GameManager {
   private saveMs: number;
 
   constructor() {
-    const saved = loadGame();
-    this.state = saved ?? createInitialState();
+    const loaded = loadGame();
+    this.state = loaded ? loaded.state : createInitialState();
     this.tickMs = CONFIG.meta.tickMs;
     this.saveMs = CONFIG.meta.autosaveIntervalMs;
+    if (loaded?.migratedFromLegacy) {
+      appendLog(fmt(TEXTS.log.migrated));
+    }
   }
 
   handleAction(actionId: string) {
-    const gives = computeActionGives(actionId, this.state);
-    this.state.totalClicks += 1;
-    for (const [rid, amt] of Object.entries(gives)) {
-      if (amt <= 0) continue;
-      this.state.resources[rid] = (this.state.resources[rid] || 0) + amt;
-      this.state.totalEarned[rid] = (this.state.totalEarned[rid] || 0) + amt;
+    const a = CONFIG.actions.find((x) => x.id === actionId);
+    if (!a) return;
+    if (a.kind === 'click') {
+      performClick(this.state, actionId);
+    } else {
+      const r = tryConvert(this.state, actionId);
+      if (r.ok) {
+        appendLog(fmt(TEXTS.log.synthOk, { gain: fmtAmounts(r.gives ?? {}) }));
+      } else if (r.reason === 'insufficient') {
+        appendLog(fmt(TEXTS.log.synthFail, { cost: fmtAmounts(r.cost ?? {}) }));
+      }
     }
-    this.refresh();
+    this.checkProgress();
+    this.renderAll();
+    this.autosave();
   }
 
   /** 尝试购买升级，返回是否成功 */
   buyUpgrade(uid: string): boolean {
     const u = CONFIG.upgrades.find((x) => x.id === uid);
     if (!u) return false;
-    const lvl = upgradeApi.getLevel(this.state, uid);
+    const lvl = getUpgradeLevel(this.state, uid);
+    const name = upgradeText(uid).name;
     if (lvl >= u.maxLevel) {
-      appendLog(`🔒 ${u.name} 已满级`);
+      appendLog(fmt(TEXTS.log.upgradeMax, { name }));
       return false;
     }
-    const cost = upgradeApi.getCost(u, lvl);
-    if (!upgradeApi.isAffordable(this.state, cost)) {
-      appendLog(`❌ 资源不足，无法购买 ${u.name}`);
+    const cost = upgradeCost(u, lvl);
+    if (!isAffordable(this.state, cost)) {
+      appendLog(fmt(TEXTS.log.upgradeFail, { name }));
       return false;
     }
     for (const [rid, amt] of Object.entries(cost)) {
-      this.state.resources[rid] -= amt;
+      this.state.resources[rid] = (this.state.resources[rid] || 0) - amt;
     }
     this.state.upgradeLevels[uid] = lvl + 1;
-    appendLog(`✅ 已升级 ${u.name} (Lv.${lvl + 1})`);
-    this.refresh();
+    appendLog(fmt(TEXTS.log.upgradeOk, { name, lv: lvl + 1 }));
+    this.checkProgress();
+    this.renderAll();
+    this.autosave();
     return true;
   }
 
   private tick() {
     // 每 tick 结算被动产出
-    let changed = false;
     for (const r of CONFIG.resources) {
-      const perTick = computePassivePerTick(r.id, this.state);
-      if (perTick > 0) {
-        this.state.resources[r.id] = (this.state.resources[r.id] || 0) + perTick;
-        this.state.totalEarned[r.id] = (this.state.totalEarned[r.id] || 0) + perTick;
-        changed = true;
+      const perTick = computePassivePerTick(this.state, r.id);
+      if (perTick > 0) addResource(this.state, r.id, perTick);
+    }
+    // 事件：概率触发 + 持续结算
+    const notes = [...maybeTriggerEvents(this.state), ...tickEvents(this.state)];
+    for (const n of notes) {
+      appendLog(n.message);
+      if (n.kind === 'start') showToast(n.message);
+    }
+    // 自动合成（静默执行，不刷日志）
+    for (const a of CONFIG.actions) {
+      if (a.kind !== 'convert') continue;
+      let attempts = autoConvertPerTick(this.state, a.id);
+      while (attempts-- > 0) {
+        const r = tryConvert(this.state, a.id);
+        if (!r.ok) break;
       }
     }
-    if (changed) this.renderAll();
+    // 里程碑检查
+    this.checkProgress();
+    this.renderAll();
   }
 
-  private refresh() {
-    this.renderAll();
-    this.state.lastSave = Date.now();
-    saveGame(this.state);
+  private checkProgress() {
+    const done = checkMilestones(this.state);
+    for (const m of done) {
+      appendLog(m.message);
+      showToast(m.message);
+    }
   }
 
   private renderAll() {
     renderResources(this.state);
+    renderEventBadges(this.state);
     renderActions(this.state, (id) => this.handleAction(id));
     renderUpgrades(this.state, (uid) => this.buyUpgrade(uid));
+    renderEvents(this.state);
+    renderMilestones(this.state);
+  }
+
+  private autosave() {
+    this.state.lastSave = Date.now();
+    saveGame(this.state);
   }
 
   start() {
+    appendLog(fmt(TEXTS.log.welcome));
     this.renderAll();
     this.timer = window.setInterval(() => this.tick(), this.tickMs);
-    window.setInterval(() => {
-      this.state.lastSave = Date.now();
-      saveGame(this.state);
-    }, this.saveMs);
-    window.addEventListener('beforeunload', () => {
-      this.state.lastSave = Date.now();
-      saveGame(this.state);
-    });
+    window.setInterval(() => this.autosave(), this.saveMs);
+    window.addEventListener('beforeunload', () => this.autosave());
   }
 
   stop() {

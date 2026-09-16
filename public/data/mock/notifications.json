@@ -1,0 +1,42 @@
+{
+  "_comment": "[MOCK] 通知日志 Mock 数据（时间/类型/内容/状态）。后续替换为 GitHub Actions / Issue 评论通知的真实拉取。",
+  "source": "mock",
+  "updatedAt": "2026-09-14T19:20:00+08:00",
+  "items": [
+    {
+      "id": "n1",
+      "time": "2026-09-14T18:42:00+08:00",
+      "type": "CI 构建",
+      "content": "CI 构建 #12 通过：vite build 成功，产物 gzip 合计 13.8KB（预算 < 15KB）",
+      "status": "unread"
+    },
+    {
+      "id": "n2",
+      "time": "2026-09-14T16:20:00+08:00",
+      "type": "Issue 评论",
+      "content": "Issue #2「源质工坊第二阶段」新评论：事件与里程碑模块进入联调",
+      "status": "unread"
+    },
+    {
+      "id": "n3",
+      "time": "2026-09-14T11:05:00+08:00",
+      "type": "风控提醒",
+      "content": "黑名单命中提醒：1 条需求提交被自动过滤，详见黑名单记录",
+      "status": "read"
+    },
+    {
+      "id": "n4",
+      "time": "2026-09-13T20:00:00+08:00",
+      "type": "CI 构建",
+      "content": "CI 构建 #11 首次失败（tsc 类型报错），重试后通过",
+      "status": "read"
+    },
+    {
+      "id": "n5",
+      "time": "2026-09-12T14:30:00+08:00",
+      "type": "版本发布",
+      "content": "v0.1.0 已发布：项目初始化，基础仓库与游戏骨架搭建完成",
+      "status": "read"
+    }
+  ]
+}

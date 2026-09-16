@@ -1,0 +1,103 @@
+{
+  "page": {
+    "title": "源质工坊",
+    "brand": "⚗️ 源质工坊",
+    "desc": "抽象能量采集与合成的放置小游戏"
+  },
+  "nav": {
+    "game": "🎮 游戏",
+    "dev": "🗂️ 开发进度"
+  },
+  "panels": {
+    "resources": "📦 资源",
+    "collect": "⚒️ 采集区",
+    "upgrades": "🛠️ 升级商店",
+    "events": "📡 事件动态",
+    "milestones": "🏁 里程碑",
+    "log": "📜 日志"
+  },
+  "resources": {
+    "essence": { "name": "✨ 源质" },
+    "core": { "name": "💠 晶核" },
+    "composite": { "name": "🔷 聚合体" }
+  },
+  "actions": {
+    "gather": { "name": "采集源质", "icon": "✨", "desc": "点击采集源质" },
+    "extract": { "name": "萃取晶核", "icon": "💠", "desc": "点击萃取晶核" },
+    "synthesize": { "name": "合成聚合体", "icon": "🔷", "desc": "消耗源质与晶核，合成聚合体" }
+  },
+  "upgrades": {
+    "charged_pick": { "name": "⛏️ 聚能镐", "desc": "每次 {a:gather} 额外 +1 {r:essence}" },
+    "core_cutter": { "name": "💎 晶核切割器", "desc": "每次 {a:extract} 额外 +1 {r:core}" },
+    "convergence_ring": { "name": "🌀 汇聚环", "desc": "每秒自动产出 10 {r:essence}" },
+    "resonance_tower": { "name": "🗼 共振塔", "desc": "每秒自动产出 5 {r:core}" },
+    "essence_prism": { "name": "🔮 源质棱镜", "desc": "每次 {a:gather} 额外 +2 {r:essence}" },
+    "synth_optimizer": { "name": "🧪 合成优化", "desc": "{a:synthesize} 消耗 -10%/级（上限 50%）" },
+    "auto_synthesizer": { "name": "🤖 自动合成器", "desc": "每 tick 自动尝试 {a:synthesize}（每级 +1 次）" },
+    "storage_expansion": { "name": "📦 仓储扩容", "desc": "所有资源上限 +500/级" },
+    "composite_catalyst": { "name": "⚗️ 聚合催化", "desc": "每次 {a:synthesize} 额外 +1 {r:composite}" },
+    "tidal_engine": { "name": "🌊 潮汐引擎", "desc": "每秒自动产出 20 {r:essence}" }
+  },
+  "events": {
+    "meteor_shower": {
+      "name": "流星雨",
+      "start": "☄️ 流星雨来袭！{sec} 秒内点击产出 ×{mult}",
+      "end": "☄️ 流星雨结束了",
+      "badge": "{name} ×{mult}"
+    },
+    "energy_tide": {
+      "name": "能量潮汐",
+      "start": "🌊 能量潮汐涌动，+{amount} {r:essence}！",
+      "end": ""
+    },
+    "resonance": {
+      "name": "共振",
+      "start": "🎵 共振发生！接下来 {n} 次合成免消耗 {r:core}",
+      "end": ""
+    }
+  },
+  "milestones": {
+    "m_essence_100": { "name": "初次积累", "desc": "累计采集 100 {r:essence}" },
+    "m_first_synth": { "name": "首次合成", "desc": "完成 1 次 {a:synthesize}" },
+    "m_click_200": { "name": "勤劳双手", "desc": "累计点击 200 次" },
+    "m_essence_500": { "name": "源质行者", "desc": "累计采集 500 {r:essence}" },
+    "m_upgrades_5": { "name": "小小工坊", "desc": "升级总等级达到 5" },
+    "m_core_100": { "name": "晶核收藏家", "desc": "累计采集 100 {r:core}" },
+    "m_synth_25": { "name": "合成学徒", "desc": "完成 25 次 {a:synthesize}" },
+    "m_essence_2000": { "name": "源质大师", "desc": "累计采集 2000 {r:essence}" },
+    "m_upgrades_15": { "name": "工坊扩张", "desc": "升级总等级达到 15" }
+  },
+  "log": {
+    "welcome": "欢迎来到源质工坊！点击「采集源质」开始你的合成之旅。",
+    "migrated": "检测到旧版存档，已安全迁移到 v2（资源体系随占位主题重置）",
+    "upgradeOk": "✅ 已升级 {name} → Lv.{lv}",
+    "upgradeMax": "🔒 {name} 已满级",
+    "upgradeFail": "❌ 资源不足，无法升级 {name}",
+    "synthOk": "🔷 {a:synthesize}成功：+{gain}",
+    "synthFail": "❌ 资源不足，无法合成（需要 {cost}）",
+    "eventStart": "🌟 事件触发：{name}",
+    "eventEnd": "事件结束：{name}",
+    "milestone": "🏆 里程碑达成「{name}」！奖励：{reward}"
+  },
+  "ui": {
+    "totalHolding": "📊 总计持有：{n}",
+    "perSec": "+{n}/s",
+    "earnedTotal": "累计 {n}",
+    "costPrefix": "费用：{cost}",
+    "maxed": "已满级",
+    "lv": "Lv.{lv}/{max}",
+    "gainPrefix": "+{gain}",
+    "convert": "{cost} → {gain}",
+    "freeTag": "🎁 免耗：{res}",
+    "emptyEvents": "一切平静……持续采集有机会触发随机事件",
+    "emptyMilestones": "暂无里程碑",
+    "nextGoal": "🎯 下一目标",
+    "doneTag": "✅",
+    "lockedTag": "🔒",
+    "progress": "{cur}/{goal}",
+    "rewardPrefix": "奖励：{reward}",
+    "eventActive": "{name} · 剩余 {sec}s",
+    "badgeFree": "🎁 {name} 免{res} ×{n}",
+    "capSuffix": "上限 {cap}"
+  }
+}
