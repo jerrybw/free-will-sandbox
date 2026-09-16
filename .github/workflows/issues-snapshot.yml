@@ -38,7 +38,8 @@ jobs:
 
       - name: Commit snapshot if changed（原生 git，无三方 action）
         run: |
-          if git diff --quiet -- public/data/issues-snapshot.json; then
+          # git diff --quiet 无法感知 untracked 新文件，改用 git status --porcelain 判定
+          if [ -z "$(git status --porcelain -- public/data/issues-snapshot.json)" ]; then
             echo "快照无变化，跳过提交"
           else
             git config user.name "github-actions[bot]"
