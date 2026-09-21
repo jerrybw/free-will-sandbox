@@ -11,6 +11,10 @@ on:
     paths:
       - "scripts/generate-issues-snapshot.mjs"
       - ".github/workflows/issues-snapshot.yml"
+  # Issue 打开/重开的瞬间立即刷新快照，消除 schedule 4-6h 实际延迟；
+  # cron 保留作兜底（label 修正、issue 关闭等非事件性变化仍需周期扫描）
+  issues:
+    types: [opened, reopened]
 
 permissions:
   contents: write
