@@ -1,16 +1,29 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-21T20:32:16.116Z",
+  "generatedAt": "2026-09-21T23:15:42.334Z",
   "source": "github-issues",
   "repo": "jerrybw/free-will-sandbox",
   "counts": {
-    "open": 0,
+    "open": 1,
     "byType": {
       "bug": 0,
       "feature": 0,
       "ux": 0,
-      "other": 0
+      "other": 1
     }
   },
-  "issues": []
+  "issues": [
+    {
+      "number": 1,
+      "title": "【功能】增加音效开关（链路验证测试 Issue）",
+      "type": "other",
+      "state": "open",
+      "author": "jerrybw",
+      "createdAt": "2026-09-21T23:12:41Z",
+      "updatedAt": "2026-09-21T23:12:41Z",
+      "url": "https://github.com/jerrybw/free-will-sandbox/issues/1",
+      "labels": [],
+      "bodyExcerpt": "### 提交人邮箱 test-pm@coze.local ### 类型 功能 ### 问题描述 游戏目前无声音反馈，希望增加背景音乐与音效开关 ### 预期效果 设置面板出现音效开关，可开可关，关闭后不播放任何声音 ### 备注 本 Issue 为 PM 发起的端到端链路验证，测试完成后关闭归档"
+    }
+  ]
 }

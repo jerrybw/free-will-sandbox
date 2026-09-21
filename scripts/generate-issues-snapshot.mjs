@@ -23,7 +23,7 @@
  * 测试：解析逻辑（buildHeaders / inferType / bodyExcerpt / toSnapshot）已导出，
  *       可被 scripts/test-generate-issues-snapshot.mjs 单测覆盖，不触发网络与写文件。
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -119,13 +119,32 @@ export function toSnapshot(items) {
   };
 }
 
+/** 剔除 generatedAt 后的实质内容：仅时间戳变化不算快照变化，避免空提交堆积 */
+export function stablePart(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") return JSON.stringify(snapshot);
+  const { generatedAt, ...rest } = snapshot;
+  return JSON.stringify(rest);
+}
+
 async function main() {
   console.log(`[issues-snapshot] 拉取 ${REPO} open issues ...`);
   const items = await fetchIssues(process.env.GITHUB_TOKEN);
   const snapshot = toSnapshot(items);
   mkdirSync(dirname(OUT_PATH), { recursive: true });
-  writeFileSync(OUT_PATH, JSON.stringify(snapshot, null, 2) + "\n", "utf8");
-  console.log(`[issues-snapshot] 生成完成: ${OUT_PATH}`);
+  let existing = null;
+  try {
+    existing = JSON.parse(readFileSync(OUT_PATH, "utf8"));
+  } catch {
+    existing = null; // 首次生成或现有文件损坏，均视为有变化
+  }
+  if (existing && stablePart(existing) === stablePart(snapshot)) {
+    console.log(
+      `[issues-snapshot] 快照实质内容无变化（仅时间戳不同），保留原文件跳过写入，避免空提交堆积`
+    );
+  } else {
+    writeFileSync(OUT_PATH, JSON.stringify(snapshot, null, 2) + "\n", "utf8");
+    console.log(`[issues-snapshot] 生成完成: ${OUT_PATH}`);
+  }
   console.log(
     `[issues-snapshot] open=${snapshot.counts.open} byType=${JSON.stringify(snapshot.counts.byType)} generatedAt=${snapshot.generatedAt}`
   );
