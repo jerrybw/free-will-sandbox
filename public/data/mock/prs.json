@@ -1,0 +1,40 @@
+{
+  "_comment": "[MOCK] 降级兜底数据：pr-snapshot.json（GitHub PR 静态快照，由 .github/workflows/pr-snapshot.yml 生成）不可用时展示（S3 起主数据源为快照）。结构与快照 schema v1 完全一致（prs 数组 + counts），便于前端同一渲染路径复用，仅徽标降级为琥珀色「离线快照 · MOCK 兜底」。",
+  "source": "mock",
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-22T10:00:00+08:00",
+  "repo": "jerrybw/free-will-sandbox",
+  "counts": { "open": 2, "checksPassed": 1, "checksFailed": 1, "checksPending": 0 },
+  "prs": [
+    {
+      "number": 12,
+      "title": "fix: 酿造台点击负数增量越界修复",
+      "author": "jerrybw",
+      "headRef": "fix/brew-negative-increment",
+      "baseRef": "main",
+      "createdAt": "2026-09-21T15:30:00+08:00",
+      "url": "https://github.com/jerrybw/free-will-sandbox/pull/12",
+      "labels": ["bug", "issue/bug"],
+      "check": {
+        "conclusion": "pass",
+        "summary": "## 🤖 PR L1 检查报告（PR #12）：✅ 通过（4 通过 / 0 失败 / 1 提示）",
+        "runUrl": "https://github.com/jerrybw/free-will-sandbox/actions/runs/1000000001"
+      }
+    },
+    {
+      "number": 11,
+      "title": "feat: 源质工坊配方扩展（占位主题）",
+      "author": "jerrybw",
+      "headRef": "feature/essence-workshop-recipes",
+      "baseRef": "main",
+      "createdAt": "2026-09-20T09:10:00+08:00",
+      "url": "https://github.com/jerrybw/free-will-sandbox/pull/11",
+      "labels": ["enhancement"],
+      "check": {
+        "conclusion": "fail",
+        "summary": "## 🤖 PR L1 检查报告（PR #11）：❌ 未通过（3 通过 / 1 失败 / 1 提示）",
+        "runUrl": "https://github.com/jerrybw/free-will-sandbox/actions/runs/1000000002"
+      }
+    }
+  ]
+}

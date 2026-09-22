@@ -30,3 +30,6 @@ coverage/
 .canvas/
 .feishu_cli/
 auth_qrcode_*.png
+
+# [S3] PR L1 检查报告（本地调试产物；CI 中生成后仅回写 PR 评论，不入库）
+pr-l1-report.md

@@ -1,0 +1,99 @@
+name: PR L1 Check
+
+# [S3] PR 自动检查：typecheck + build + L1 汇总（包体预算 / 安全红线 / 关联检查），
+#      报告以 <!-- pr-l1-check --> 标记幂等回写 PR 评论；任一 fail 项 → check 置 failure。
+#      注意：报告与评论回写步骤永远先于失败判定执行，保证失败 PR 也能看到报告。
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-l1-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  l1:
+    # check run 展示名与 scripts/generate-pr-snapshot.mjs 的 CHECK_RUN_NAME 过滤值保持一致
+    name: PR L1 Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout（fetch-depth: 0 供 git diff origin/main...HEAD 取全量历史）"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps（npm ci 失败时回退 npm install）
+        run: npm ci || npm install
+
+      - name: Typecheck（失败仅记录状态，不中断，保证报告与评论仍然回写）
+        run: |
+          if npm run typecheck; then
+            echo "TYPECHECK_STATUS=pass" >> "$GITHUB_ENV"
+          else
+            echo "TYPECHECK_STATUS=fail" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build（失败仅记录状态，不中断，保证报告与评论仍然回写）
+        run: |
+          if npm run build; then
+            echo "BUILD_STATUS=pass" >> "$GITHUB_ENV"
+          else
+            echo "BUILD_STATUS=fail" >> "$GITHUB_ENV"
+          fi
+
+      - name: Read PR body（gh api 取描述正文，经 GITHUB_ENV 多行变量传给检查脚本）
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          {
+            echo "PR_BODY<<gh-pr-body-eof-7f3a"
+            gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" -q .body
+            echo "gh-pr-body-eof-7f3a"
+          } >> "$GITHUB_ENV"
+
+      - name: Run PR L1 Check（脚本退出码 1 时继续走评论回写，失败由收尾步骤统一判定）
+        id: l1
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: origin/main
+        run: node scripts/pr-l1-check.mjs
+
+      - name: "Upsert PR comment（按 <!-- pr-l1-check --> 标记幂等：有则 PATCH 更新，无则 POST 创建）"
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # PR 评论走 issues/{number}/comments API；标记写在评论正文中用于幂等识别
+          COMMENT_ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" --paginate \
+            -q '[.[] | select(.body | contains("<!-- pr-l1-check -->")) | .id] | first // empty')
+          if [ -n "$COMMENT_ID" ]; then
+            gh api -X PATCH "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments/${COMMENT_ID}" \
+              -f body="$(cat pr-l1-report.md)"
+            echo "已更新既有检查报告评论（comment id=${COMMENT_ID}）"
+          else
+            gh api -X POST "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+              -f body="$(cat pr-l1-report.md)"
+            echo "已创建检查报告评论"
+          fi
+
+      - name: 收尾判定（任一 fail 项 → workflow conclusion = failure，此时报告与评论均已回写）
+        if: always()
+        run: |
+          if [ "${TYPECHECK_STATUS:-pass}" = "fail" ] || [ "${BUILD_STATUS:-pass}" = "fail" ] || [ "${{ steps.l1.outcome }}" = "failure" ]; then
+            echo "::error::PR L1 检查存在 fail 项（typecheck=${TYPECHECK_STATUS:-pass} build=${BUILD_STATUS:-pass} l1=${{ steps.l1.outcome }}）"
+            exit 1
+          fi
+          echo "PR L1 检查全部通过"

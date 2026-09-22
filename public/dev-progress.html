@@ -83,6 +83,16 @@
     .istate{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;font-weight:600;border:1px solid var(--good);color:var(--good)}
     .issue-card .excerpt{margin-top:6px;color:var(--muted);font-size:11px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .live-meta{margin-top:8px;color:var(--muted);font-size:11px;text-align:center}
+
+    /* [S3] PR 状态分区：L1 检查结论徽标（pass 绿 / fail 红 / pending·none 灰）与面板间距 */
+    .check-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;font-weight:600;border:1px solid var(--muted);color:var(--muted);text-decoration:none;vertical-align:1px;margin-right:2px}
+    .check-badge.pass{border-color:var(--good);color:var(--good)}
+    .check-badge.fail{border-color:var(--bad);color:var(--bad)}
+    .check-badge.pending,.check-badge.none{border-color:var(--muted);color:var(--muted)}
+    .issue-card .title a{color:inherit;text-decoration:none}
+    .issue-card .title a:hover{text-decoration:underline}
+    .pr-panel{margin-top:16px}
+    .pr-counts{font-size:10px;color:var(--muted);margin-left:4px}
   </style>
 </head>
 <body>
@@ -291,6 +301,83 @@
       }
     }
     loadBoard();
+
+    /* ===== [S3] PR 状态分区接入（主数据源：Actions 生成的 PR 静态快照） ===== */
+    const PR_SNAPSHOT_URL = "./data/pr-snapshot.json";
+    const MOCK_PRS_URL = "./data/mock/prs.json";
+    const CHECK_TEXT = { pass: "✅ L1 通过", fail: "❌ L1 未通过", pending: "⏳ L1 进行中", none: "－ 无 L1 记录" };
+
+    // L1 检查结论徽标：pass 绿 / fail 红 / pending 灰 / none 灰；有 runUrl 时可点进 Checks 详情
+    function checkBadge(c) {
+      const conf = (c && c.conclusion) || "none";
+      const text = CHECK_TEXT[conf] || CHECK_TEXT.none;
+      if (conf !== "none" && c.runUrl) {
+        return `<a class="check-badge ${esc(conf)}" href="${esc(c.runUrl)}" target="_blank" rel="noopener" title="查看 PR L1 Check 运行详情">${esc(text)}</a>`;
+      }
+      return `<span class="check-badge ${esc(conf)}" title="${conf === "none" ? "尚无 PR L1 Check 运行记录" : "无运行详情链接"}">${esc(text)}</span>`;
+    }
+
+    function prCard(p) {
+      const labels = (p.labels || []).map(l => `<span class="lbl">${esc(l)}</span>`).join("");
+      const summary = p.check && p.check.summary
+        ? `<div class="excerpt">${esc(String(p.check.summary).replace(/^#+\s*/, ""))}</div>` : "";
+      return `<div class="card issue-card">${checkBadge(p.check || {})}${labels}
+        <div class="title">#${esc(p.number)} <a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a></div>
+        <div class="meta">@${esc(p.author)} · ${esc(p.headRef)} → ${esc(p.baseRef)} · ${fmtRelative(p.createdAt)}</div>${summary}</div>`;
+    }
+
+    function renderPrs(prs) {
+      document.getElementById("prList").innerHTML = prs.length
+        ? prs.map(prCard).join("")
+        : `<div class="empty">当前没有进行中的 PR</div>`;
+      document.getElementById("prCount").textContent = prs.length;
+    }
+
+    function setPrBadge(mode, snap) {
+      const el = document.getElementById("prBadge");
+      if (!el) return;
+      if (mode === "live") {
+        const c = (snap && snap.counts) || {};
+        el.innerHTML = `<span class="live-dot" title="数据来自 GitHub PR 静态快照（生成于 ${esc(fmtTime(snap.generatedAt))}）">LIVE 快照</span>`
+          + (typeof c.checksPassed === "number"
+            ? ` <span class="pr-counts">✅${esc(c.checksPassed)} ❌${esc(c.checksFailed)} ⏳${esc(c.checksPending)}</span>` : "");
+      } else {
+        // [MOCK] 降级兜底数据：PR 快照不可用时展示，沿用现有 MOCK 角标样式
+        el.innerHTML = `<span class="mock-dot" title="GitHub PR 快照不可用，当前展示为离线兜底 Mock 数据">离线快照 · MOCK 兜底</span>`;
+      }
+    }
+
+    async function loadPrSection() {
+      // 主链路：读取 Actions 生成的 PR 静态快照（scripts/generate-pr-snapshot.mjs，PR 检查完成后 / 每 15 分钟更新）
+      let snap = null;
+      try {
+        const r = await fetch(PR_SNAPSHOT_URL);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const data = await r.json();
+        if (!data || !Array.isArray(data.prs)) throw new Error("PR 快照 schema 不合法");
+        snap = data;
+      } catch (e) {
+        snap = null;
+      }
+      if (snap) {
+        // LIVE 渲染：真实 open PR 列表 + L1 检查结论
+        renderPrs(snap.prs);
+        setPrBadge("live", snap);
+        return;
+      }
+      // 降级兜底：快照不可用时读取本地 Mock 数据（结构与快照 schema 一致），[MOCK] 注释语义标注
+      try {
+        const r = await fetch(MOCK_PRS_URL);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const mock = await r.json();
+        renderPrs(mock.prs || []);
+        setPrBadge("mock", null);
+      } catch (e) {
+        document.getElementById("prList").innerHTML = `<div class="err-box">⚠️ PR 状态数据加载失败（快照与 Mock 数据源均不可用），请检查 ./data/pr-snapshot.json 与 ./data/mock/prs.json</div>`;
+        document.getElementById("prCount").textContent = 0;
+      }
+    }
+    loadPrSection();
 
     // [MOCK] 通知日志：后续替换为 GitHub Actions / Issue 评论通知的真实数据源
     fetch("./data/mock/notifications.json")
