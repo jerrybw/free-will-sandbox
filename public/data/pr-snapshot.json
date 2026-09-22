@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-22T00:00:28.185Z",
+  "source": "github-prs",
+  "repo": "jerrybw/free-will-sandbox",
+  "counts": {
+    "open": 0,
+    "checksPassed": 0,
+    "checksFailed": 0,
+    "checksPending": 0
+  },
+  "prs": []
+}
