@@ -1,13 +1,29 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-22T00:00:28.185Z",
+  "generatedAt": "2026-09-24T06:35:49.245Z",
   "source": "github-prs",
   "repo": "jerrybw/free-will-sandbox",
   "counts": {
-    "open": 0,
-    "checksPassed": 0,
+    "open": 1,
+    "checksPassed": 1,
     "checksFailed": 0,
     "checksPending": 0
   },
-  "prs": []
+  "prs": [
+    {
+      "number": 2,
+      "title": "test: L1 检查验证分支（触发 pr-check 全链路用）",
+      "author": "jerrybw",
+      "headRef": "test/l1-verify",
+      "baseRef": "main",
+      "createdAt": "2026-09-24T06:35:09Z",
+      "url": "https://github.com/jerrybw/free-will-sandbox/pull/2",
+      "labels": [],
+      "check": {
+        "conclusion": "pass",
+        "summary": "## 🤖 PR L1 检查报告（PR #2）：✅ 通过（4 通过 / 0 失败 / 1 提示）",
+        "runUrl": "https://github.com/jerrybw/free-will-sandbox/actions/runs/35965207998/job/107522150943"
+      }
+    }
+  ]
 }
