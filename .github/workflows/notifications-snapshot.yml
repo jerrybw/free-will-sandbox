@@ -1,0 +1,55 @@
+name: Notifications Snapshot
+
+# [S4] 每 15 分钟拉取仓库全部 Issues 的机器人通知评论与工作流标签流转事件，
+#      生成静态快照 public/data/notifications-snapshot.json，提交回 main 供
+#      dev-progress.html「通知日志分区」读取，保持纯前端架构。
+#      commit 信息携带 [skip ci] 防止 push 再次触发本 workflow 造成循环。
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/generate-notifications-snapshot.mjs"
+      - ".github/workflows/notifications-snapshot.yml"
+  # Issue 打开/重开/打标签的瞬间立即刷新快照，消除 schedule 4-6h 实际延迟；
+  # cron 保留作兜底（issue 关闭、评论追加等非事件性变化仍需周期扫描）
+  issues:
+    types: [opened, reopened, labeled]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: notifications-snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout（内置 GITHUB_TOKEN，persist-credentials 默认开启供后续 push）
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate notifications snapshot
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/generate-notifications-snapshot.mjs
+
+      - name: Commit snapshot if changed（原生 git，无三方 action）
+        run: |
+          # git diff --quiet 无法感知 untracked 新文件，改用 git status --porcelain 判定
+          if [ -z "$(git status --porcelain -- public/data/notifications-snapshot.json)" ]; then
+            echo "快照无变化，跳过提交"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/data/notifications-snapshot.json
+            git commit -m "chore: update notifications snapshot [skip ci]"
+            git push origin main
+          fi

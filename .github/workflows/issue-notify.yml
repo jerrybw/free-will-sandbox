@@ -1,0 +1,123 @@
+name: Issue Notify
+
+# [S4] Issue 受理确认与状态流转通知（三通道之一，纯 curl 直调 api.github.com，无三方 action）
+#  - opened/reopened：机器人发布「🤖 已受理 · 进入评审队列」评论，并尝试追加 pending 标签
+#  - labeled（approved/rejected/done）：按标签分支发布状态流转评论，并尝试移除 pending 标签
+#  - workflow_dispatch：可传 issue_number 手动补发受理评论（留空则不执行）
+# 其余 label（含本工作流自身追加的 pending）不触发任何评论，避免循环。
+on:
+  issues:
+    types: [opened, reopened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "手动补发受理评论的 Issue 编号（留空则不执行）"
+        required: false
+        type: string
+
+permissions:
+  issues: write
+
+# 受理/流转通知不应半途被取消，采用排队串行（不设 cancel-in-progress）
+concurrency:
+  group: issue-notify
+
+jobs:
+  acknowledge:
+    # Job A 受理确认：opened / reopened 事件，或手动触发且传入 issue_number；PR 一律跳过
+    if: ${{ !github.event.issue.pull_request && (github.event.action == 'opened' || github.event.action == 'reopened' || (github.event_name == 'workflow_dispatch' && github.event.inputs.issue_number != '')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 发布受理确认评论并尝试追加 pending 标签
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || github.event.inputs.issue_number }}
+        run: |
+          if [ -z "${ISSUE_NUMBER}" ]; then
+            echo "::warning::未指定 issue_number，跳过受理确认"
+            exit 0
+          fi
+          cat > /tmp/ack-body.json <<'JSON'
+          {"body":"🤖 已受理 · 进入评审队列\n\n感谢反馈！本 Issue 已进入评审队列，后续流转流程：评审 → 排期开发 → 测试 → 完成发布 / 拒绝。\n\n需求状态与开发进度可在进度页查看：https://jerrybw.github.io/free-will-sandbox/dev-progress.html\n游戏预览站：https://jerrybw.github.io/free-will-sandbox/\n\n再次感谢你的贡献！"}
+          JSON
+          CODE=$(curl -sS -o /tmp/ack-resp.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -X POST \
+            "https://api.github.com/repos/${REPO}/issues/${ISSUE_NUMBER}/comments" \
+            --data-binary @/tmp/ack-body.json)
+          case "${CODE}" in
+            200|201) echo "受理评论已发布（HTTP ${CODE}）" ;;
+            *) echo "::error::受理评论发布失败（HTTP ${CODE}）"; cat /tmp/ack-resp.json; exit 1 ;;
+          esac
+
+          # 尝试追加 pending 标签；标签不存在（422）或权限受限（403）等场景仅警告，不 fail step
+          cat > /tmp/pending-label.json <<'JSON'
+          {"labels":["pending"]}
+          JSON
+          CODE=$(curl -sS -o /tmp/label-resp.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -X POST \
+            "https://api.github.com/repos/${REPO}/issues/${ISSUE_NUMBER}/labels" \
+            --data-binary @/tmp/pending-label.json)
+          case "${CODE}" in
+            200|201) echo "已追加 pending 标签（HTTP ${CODE}）" ;;
+            *) echo "::warning::追加 pending 标签未成功（HTTP ${CODE}，可能标签不存在或权限受限），已跳过且不影响流程" ;;
+          esac
+
+  transition:
+    # Job B 状态流转：labeled 事件按 approved / rejected / done 分支评论；其余 label 不动作
+    if: ${{ github.event.action == 'labeled' && !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 按标签发布状态流转评论并尝试移除 pending 标签
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          LABEL_NAME: ${{ github.event.label.name }}
+        run: |
+          case "${LABEL_NAME}" in
+            approved)
+              BODY='✅ 评审通过 · 进入开发排期\n\n本 Issue 已通过维护者评审，进入开发排期队列。\n\n开发进度与排期可在进度页查看：https://jerrybw.github.io/free-will-sandbox/dev-progress.html\n\n感谢你的贡献！'
+              ;;
+            rejected)
+              BODY='❌ 未通过评审 · 感谢反馈\n\n很遗憾，本 Issue 未通过本次评审，具体原因以上方维护者说明为准。\n\n欢迎继续体验游戏并提出其他建议：https://jerrybw.github.io/free-will-sandbox/\n\n再次感谢你的反馈！'
+              ;;
+            done)
+              BODY='🎉 需求已完成并发布 · 感谢贡献\n\n本 Issue 对应的需求已实现并随版本发布。\n\n欢迎在预览站体验：https://jerrybw.github.io/free-will-sandbox/\n\n如有新的想法，欢迎继续提交 Issue！'
+              ;;
+            *)
+              echo "标签 ${LABEL_NAME} 不在流转通知范围（approved/rejected/done），跳过"
+              exit 0
+              ;;
+          esac
+          cat > /tmp/transition-body.json <<JSON
+          {"body":"${BODY}"}
+          JSON
+          CODE=$(curl -sS -o /tmp/transition-resp.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -X POST \
+            "https://api.github.com/repos/${REPO}/issues/${ISSUE_NUMBER}/comments" \
+            --data-binary @/tmp/transition-body.json)
+          case "${CODE}" in
+            200|201) echo "状态流转评论已发布（HTTP ${CODE}）" ;;
+            *) echo "::error::状态流转评论发布失败（HTTP ${CODE}）"; cat /tmp/transition-resp.json; exit 1 ;;
+          esac
+
+          # 命中 approved/rejected/done 后尝试移除 pending 标签（本就无 pending 时 404，容错跳过）
+          CODE=$(curl -sS -o /tmp/pending-del-resp.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -X DELETE \
+            "https://api.github.com/repos/${REPO}/issues/${ISSUE_NUMBER}/labels/pending")
+          case "${CODE}" in
+            200|204) echo "已移除 pending 标签（HTTP ${CODE}）" ;;
+            *) echo "::warning::移除 pending 标签未成功（HTTP ${CODE}，可能本就无 pending 标签），已跳过且不影响流程" ;;
+          esac

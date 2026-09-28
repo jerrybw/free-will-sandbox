@@ -57,7 +57,7 @@
     .bip{color:var(--accent)}
     .breason{flex:1 1 100%;color:var(--bad);font-size:11px;line-height:1.5}
 
-    /* 需求提交表单（Mock：localStorage 暂存） */
+    /* 需求提交表单（[S4] 提交即跳转 GitHub 创建真实 Issue，零服务端） */
     .req-form{margin-top:14px;background:var(--panel2);border:1px dashed var(--border);border-radius:10px;padding:10px;font-size:12px}
     .req-form-title{font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
     .req-form input,.req-form select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 9px;font-size:12px;margin-bottom:8px;outline:none}
@@ -98,8 +98,8 @@
 <body>
   <div class="top">
     <h1>🗂️ 开发进度
-      <!-- [MOCK] 页面级 Mock 徽标：当前页面数据均来自 Mock，后续接入 GitHub Issues 后移除 -->
-      <span class="mock-badge" title="当前展示为 Mock 数据，后续接入 GitHub Issues">Mock 数据</span>
+      <!-- [S2→S4] 页面级数据徽标：JS setPageBadge 按快照加载结果实时切换 LIVE/MOCK -->
+      <span id="pageDataBadge" class="mock-badge" title="当前展示为 Mock 数据，后续接入 GitHub Issues">Mock 数据</span>
     </h1>
     <nav><a href="./">🎮 游戏</a><a href="./dev-progress.html">🗂️ 开发进度</a></nav>
   </div>
@@ -107,7 +107,9 @@
   <div class="wrap">
     <div class="grid">
       <div class="col">
-        <h2>📋 需求队列 <span class="n" id="queueCount">0</span></h2>
+        <h2>📋 需求队列
+          <span id="queueBadge" class="mock-dot" title="当前展示为 Mock 数据">Mock</span>
+          <span class="n" id="queueCount">0</span></h2>
         <div id="queue"></div>
         <!-- [MOCK] 提交流转后续替换为 GitHub Issues 创建 API，本地仅 localStorage 暂存 -->
         <form id="reqForm" class="req-form" autocomplete="off">
@@ -140,10 +142,18 @@
     </div>
 
     <div class="panel-grid">
-      <!-- [MOCK] 通知日志分区：后续替换为 GitHub Actions / Issue 评论通知的真实数据源 -->
+      <!-- [S3] PR 状态分区：主数据源为 Actions 生成的 PR 静态快照（LIVE），失败时回退本地 Mock 兜底 -->
+      <details class="panel pr-panel" open>
+        <summary>🔀 PR 状态
+          <span id="prBadge" class="mock-dot" title="当前展示为 Mock 数据，后续接入 GitHub PR 快照">Mock</span>
+          <span class="n" id="prCount">0</span>
+        </summary>
+        <div id="prList" class="panel-body"></div>
+      </details>
+      <!-- [S4] 通知日志分区：主数据源为 Actions 生成的通知静态快照（LIVE），失败时回退本地 Mock 兜底 -->
       <details class="panel" open>
         <summary>🔔 通知日志
-          <span class="mock-dot" title="当前展示为 Mock 数据，后续接入 GitHub 通知">Mock</span>
+          <span id="notifBadge" class="mock-dot" title="当前展示为 Mock 数据，后续接入 GitHub 通知">Mock</span>
           <span class="n" id="notifCount">0</span>
         </summary>
         <div id="notifList" class="panel-body"></div>
@@ -245,12 +255,12 @@
       if (!el) return;
       if (mode === "live") {
         el.className = "live-badge";
-        el.title = "需求数据来自 GitHub Issues 快照；表单/通知/黑名单仍为 Mock";
+        el.title = "需求/PR/通知数据来自 GitHub 快照（约每 15 分钟更新），提交表单已接入真实 Issue 创建；黑名单与排期仍为 Mock";
         el.textContent = "LIVE 快照";
       } else {
         // [MOCK] 降级兜底数据：沿用现有 Mock 徽标
         el.className = "mock-badge";
-        el.title = "需求快照不可用，已降级为 Mock 兜底数据";
+        el.title = "GitHub 快照不可用，需求/PR/通知已降级为 Mock 兜底数据";
         el.textContent = "Mock 数据";
       }
     }
@@ -379,22 +389,64 @@
     }
     loadPrSection();
 
-    // [MOCK] 通知日志：后续替换为 GitHub Actions / Issue 评论通知的真实数据源
-    fetch("./data/mock/notifications.json")
-      .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(data => {
-        const items = data.items || [];
-        document.getElementById("notifList").innerHTML = items.length
-          ? items.map(n => `<div class="item"><span class="ntype">${esc(n.type)}</span>
-              <span class="nstatus ${n.status === "unread" ? "unread" : "read"}">${n.status === "unread" ? "未读" : "已读"}</span>
-              <span class="ntime">${fmtTime(n.time)}</span>
-              <span class="ncontent">${esc(n.content)}</span></div>`).join("")
-          : `<div class="empty">暂无通知</div>`;
-        document.getElementById("notifCount").textContent = items.length;
-      })
-      .catch(() => {
-        document.getElementById("notifList").innerHTML = `<div class="err-box">⚠️ 通知数据加载失败，请检查 ./data/mock/notifications.json</div>`;
-      });
+    /* ===== [S4] 通知日志接入（主数据源：Actions 生成的通知静态快照） ===== */
+    const NOTIF_SNAPSHOT_URL = "./data/notifications-snapshot.json";
+    const MOCK_NOTIF_URL = "./data/mock/notifications.json";
+
+    // LIVE 与 Mock 字段结构对齐（type/status/time/content），共用同一渲染函数
+    function renderNotifs(items, metaHtml) {
+      const list = items.length
+        ? items.map(n => `<div class="item"><span class="ntype">${esc(n.type)}</span>
+            <span class="nstatus ${n.status === "unread" ? "unread" : "read"}">${n.status === "unread" ? "未读" : "已读"}</span>
+            <span class="ntime">${fmtTime(n.time)}</span>
+            <span class="ncontent">${esc(n.content)}</span></div>`).join("")
+        : `<div class="empty">暂无通知</div>`;
+      document.getElementById("notifList").innerHTML = list + (metaHtml || "");
+      document.getElementById("notifCount").textContent = items.length;
+    }
+
+    function setNotifBadge(mode, snap) {
+      const el = document.getElementById("notifBadge");
+      if (!el) return;
+      if (mode === "live") {
+        el.innerHTML = `<span class="live-dot" title="数据来自 GitHub 通知静态快照（生成于 ${esc(fmtTime(snap.generatedAt))}）">LIVE 快照</span>`;
+      } else {
+        // [MOCK] 降级兜底数据：通知快照不可用时展示，沿用现有 MOCK 角标样式
+        el.innerHTML = `<span class="mock-dot" title="GitHub 通知快照不可用，当前展示为离线兜底 Mock 数据">离线快照 · MOCK 兜底</span>`;
+      }
+    }
+
+    async function loadNotifs() {
+      // 主链路：读取 Actions 生成的通知静态快照（scripts/generate-notifications-snapshot.mjs，约每 15 分钟更新）
+      let snap = null;
+      try {
+        const r = await fetch(NOTIF_SNAPSHOT_URL);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const data = await r.json();
+        if (!data || !Array.isArray(data.items)) throw new Error("通知快照 schema 不合法");
+        snap = data;
+      } catch (e) {
+        snap = null;
+      }
+      if (snap) {
+        // LIVE 渲染：真实机器人通知与工作流标签流转记录
+        renderNotifs(snap.items, `<div class="live-meta">快照生成于 ${esc(fmtTime(snap.generatedAt))} · 来源 GitHub 通知（约每 15 分钟更新）</div>`);
+        setNotifBadge("live", snap);
+        return;
+      }
+      // 降级兜底：快照不可用时读取本地 Mock 数据（字段结构与快照一致），[MOCK] 注释语义标注
+      try {
+        const r = await fetch(MOCK_NOTIF_URL);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const mock = await r.json();
+        renderNotifs(mock.items || [], `<div class="live-meta">离线 Mock 兜底数据 · 通知快照暂不可用</div>`);
+        setNotifBadge("mock", null);
+      } catch (e) {
+        document.getElementById("notifList").innerHTML = `<div class="err-box">⚠️ 通知数据加载失败（快照与 Mock 数据源均不可用），请检查 ./data/notifications-snapshot.json 与 ./data/mock/notifications.json</div>`;
+        document.getElementById("notifCount").textContent = 0;
+      }
+    }
+    loadNotifs();
 
     // [MOCK] 黑名单记录：纯前端无法真实拦截，后续由平台/边缘函数提供真实数据，此处仅 Mock 展示
     fetch("./data/mock/blacklist.json")
@@ -413,32 +465,36 @@
         document.getElementById("blackList").innerHTML = `<div class="err-box">⚠️ 黑名单数据加载失败，请检查 ./data/mock/blacklist.json</div>`;
       });
 
-    // [MOCK] 提交流转后续替换为 GitHub Issues 创建 API，本地仅 localStorage 暂存
-    // 字段结构对齐将来 GitHub Issue：title / body / labels / email / created_at
+    // [S4] 提交即跳转 GitHub 创建真实 Issue（零服务端）：type→labels 映射，拼装 issues/new URL
+    // Issue 创建后由 issue-notify（受理评论/状态流转）与快照工作流自动接续，进入需求队列与通知日志
+    const TYPE_LABELS = {
+      "新功能": ["issue/feature"],
+      "优化建议": ["issue/feature"],
+      "Bug 反馈": ["issue/bug"],
+    };
+    const ISSUE_NEW_URL = "https://github.com/jerrybw/free-will-sandbox/issues/new";
     document.getElementById("reqForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const hint = document.getElementById("reqHint");
       const title = document.getElementById("reqTitle").value.trim();
       const type = document.getElementById("reqType").value;
       const email = document.getElementById("reqEmail").value.trim();
-      if (!title || !type || !email) return;
-      const submission = {
-        title,
-        body: `类型：${type}\n来源：开发进度页 Mock 表单\n状态：待评审`,
-        labels: ["需求收集", type],
-        email,
-        created_at: new Date().toISOString()
-      };
+      if (!title || !type) return;
+      const bodyLines = ["类型：" + type, "来源：开发进度页需求表单"];
+      if (email) bodyLines.push("联系邮箱：" + email);
+      bodyLines.push("", "**需求描述：**", "（请在 GitHub Issue 页面补充细节后提交）");
+      const params = new URLSearchParams();
+      params.set("title", title);
+      params.set("body", bodyLines.join("\n"));
+      params.set("labels", (TYPE_LABELS[type] || ["issue/other"]).join(","));
       try {
-        const list = JSON.parse(localStorage.getItem("fws_mock_submissions") || "[]");
-        list.push(submission);
-        localStorage.setItem("fws_mock_submissions", JSON.stringify(list));
+        window.open(`${ISSUE_NEW_URL}?${params.toString()}`, "_blank", "noopener");
         hint.className = "req-hint ok";
-        hint.textContent = `✅ 提交成功（本地暂存第 ${list.length} 条）。当前为 Mock 流转，后续接入 GitHub Issues 后会正式创建 Issue。`;
+        hint.textContent = "✅ 已在 GitHub 打开 Issue 创建页（新标签页），完善描述并提交后，需求将自动进入本页需求队列与通知日志。";
         e.target.reset();
       } catch (err) {
         hint.className = "req-hint err";
-        hint.textContent = "⚠️ 本地暂存失败（localStorage 不可用），请稍后重试。";
+        hint.textContent = "⚠️ 未能打开 GitHub Issue 创建页，请检查浏览器弹窗设置后重试。";
       }
     });
   </script>
