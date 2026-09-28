@@ -41,7 +41,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/generate-notifications-snapshot.mjs
 
-      - name: Commit snapshot if changed（原生 git，无三方 action）
+      - name: Commit snapshot if changed（原生 git，无三方 action；push 竞态时 rebase 重试）
         run: |
           # git diff --quiet 无法感知 untracked 新文件，改用 git status --porcelain 判定
           if [ -z "$(git status --porcelain -- public/data/notifications-snapshot.json)" ]; then
@@ -51,5 +51,17 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add public/data/notifications-snapshot.json
             git commit -m "chore: update notifications snapshot [skip ci]"
-            git push origin main
+            # 多个快照工作流可能并发提交 main，push 被拒时 rebase 重试（最多 3 次）
+            for i in 1 2 3; do
+              if git push origin main; then
+                echo "推送成功（第 $i 次尝试）"
+                exit 0
+              fi
+              echo "::warning::push 被拒（第 $i 次），rebase 远端后重试"
+              git fetch origin main
+              git rebase origin/main || { git rebase --abort; exit 1; }
+              sleep $((i * 5))
+            done
+            echo "::error::重试 3 次仍推送失败"
+            exit 1
           fi
