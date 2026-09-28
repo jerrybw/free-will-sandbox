@@ -1,18 +1,32 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-28T10:13:37.703Z",
+  "generatedAt": "2026-09-28T10:58:56.358Z",
   "source": "github-issues",
   "repo": "jerrybw/free-will-sandbox",
   "counts": {
-    "open": 1,
+    "open": 2,
     "byType": {
       "bug": 0,
       "feature": 0,
       "ux": 0,
-      "other": 1
+      "other": 2
     }
   },
   "issues": [
+    {
+      "number": 4,
+      "title": "【演练】通知系统全生命周期验证（S4 验收用，验证后关闭）",
+      "type": "other",
+      "state": "open",
+      "author": "jerrybw",
+      "createdAt": "2026-09-28T10:58:43Z",
+      "updatedAt": "2026-09-28T10:58:51Z",
+      "url": "https://github.com/jerrybw/free-will-sandbox/issues/4",
+      "labels": [
+        "pending"
+      ],
+      "bodyExcerpt": "来源：DEV Agent S4 端到端演练 **用途**：验证 S4 通知系统三通道全链路 1. 本 Issue 创建后，issue-notify 工作流应自动发布「🤖 已受理 · 进入评审队列」评论并尝试追加 pending 标签 2. 维护者打 approved / rejected / done 任一标签后，应自动发布对应流转评论 3. 进度页通知日志区应显示本 Issue 的受理与流转记录（notifications-snapshot.json） **验证完成后将关闭本 Issue**。"
+    },
     {
       "number": 3,
       "title": "[权限探测]",
