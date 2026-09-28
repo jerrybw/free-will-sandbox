@@ -1,10 +1,27 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-28T10:58:33.079Z",
+  "generatedAt": "2026-09-28T11:08:14.316Z",
   "source": "github-notifications",
   "repo": "jerrybw/free-will-sandbox",
   "counts": {
-    "total": 0
+    "total": 2
   },
-  "items": []
+  "items": [
+    {
+      "id": "n-4-comment-5868531152",
+      "time": "2026-09-28T10:58:51Z",
+      "type": "受理确认",
+      "content": "Issue #4「【演练】通知系统全生命周期验证（S4 验收用，验…」 🤖 已受理 · 进入评审队列",
+      "status": "unread",
+      "url": "https://github.com/jerrybw/free-will-sandbox/issues/4#issuecomment-5868531152"
+    },
+    {
+      "id": "n-4-label-31985210893",
+      "time": "2026-09-28T10:58:51Z",
+      "type": "标签流转",
+      "content": "Issue #4「【演练】通知系统全生命周期验证（S4 验收用，验…」 标签：无 → pending",
+      "status": "unread",
+      "url": "https://github.com/jerrybw/free-will-sandbox/issues/4"
+    }
+  ]
 }
